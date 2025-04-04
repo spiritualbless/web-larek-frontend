@@ -4,13 +4,13 @@ type EventName = string | RegExp;
 type Subscriber = Function;
 type EmitterEvent = {
     eventName: string,
-    data: unknown
+    infoPayload: unknown
 };
 
 export interface IEvents {
-    on<T extends object>(event: EventName, callback: (data: T) => void): void;
-    emit<T extends object>(event: string, data?: T): void;
-    trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void;
+    on<T extends object>(trigger: EventName, callback: (infoPayload: T) => void): void;
+    emit<T extends object>(trigger: string, infoPayload?: T): void;
+    trigger<T extends object>(trigger: string, context?: Partial<T>): (infoPayload: T) => void;
 }
 
 /**
@@ -28,7 +28,7 @@ export class EventEmitter implements IEvents {
     /**
      * Установить обработчик на событие
      */
-    on<T extends object>(eventName: EventName, callback: (event: T) => void) {
+    on<T extends object>(eventName: EventName, callback: (trigger: T) => void) {
         if (!this._events.has(eventName)) {
             this._events.set(eventName, new Set<Subscriber>());
         }
@@ -50,14 +50,10 @@ export class EventEmitter implements IEvents {
     /**
      * Инициировать событие с данными
      */
-    emit<T extends object>(eventName: string, data?: T) {
+    emit<T extends object>(eventName: string, infoPayload?: T) {
         this._events.forEach((subscribers, name) => {
-            if (name === '*') subscribers.forEach(callback => callback({
-                eventName,
-                data
-            }));
             if (name instanceof RegExp && name.test(eventName) || name === eventName) {
-                subscribers.forEach(callback => callback(data));
+                subscribers.forEach(callback => callback(infoPayload));
             }
         });
     }
@@ -65,7 +61,7 @@ export class EventEmitter implements IEvents {
     /**
      * Слушать все события
      */
-    onAll(callback: (event: EmitterEvent) => void) {
+    onAll(callback: (trigger: EmitterEvent) => void) {
         this.on("*", callback);
     }
 
@@ -80,9 +76,9 @@ export class EventEmitter implements IEvents {
      * Сделать коллбек триггер, генерирующий событие при вызове
      */
     trigger<T extends object>(eventName: string, context?: Partial<T>) {
-        return (event: object = {}) => {
+        return (trigger: object = {}) => {
             this.emit(eventName, {
-                ...(event || {}),
+                ...(trigger || {}),
                 ...(context || {})
             });
         };

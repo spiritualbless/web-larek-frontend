@@ -22,7 +22,7 @@ export class Api {
     protected handleResponse(response: Response): Promise<object> {
         if (response.ok) return response.json();
         else return response.json()
-            .then(data => Promise.reject(data.error ?? response.statusText));
+            .then(infoPayload => Promise.reject(infoPayload.error ?? response.statusText));
     }
 
     get(uri: string) {
@@ -32,11 +32,11 @@ export class Api {
         }).then(this.handleResponse);
     }
 
-    post(uri: string, data: object, method: ApiPostMethods = 'POST') {
+    post(uri: string, infoPayload: object, method: ApiPostMethods = 'POST') {
         return fetch(this.baseUrl + uri, {
             ...this.options,
             method,
-            body: JSON.stringify(data)
+            body: JSON.stringify(infoPayload)
         }).then(this.handleResponse);
     }
 }

@@ -72,9 +72,9 @@ export function getObjectProperties(obj: object, filter?: (name: string, prop: P
 /**
  * Устанавливает dataset атрибуты элемента
  */
-export function setElementData<T extends Record<string, unknown> | object>(el: HTMLElement, data: T) {
-    for (const key in data) {
-        el.dataset[key] = String(data[key]);
+export function setElementData<T extends Record<string, unknown> | object>(el: HTMLElement, infoPayload: T) {
+    for (const key in infoPayload) {
+        el.dataset[key] = String(infoPayload[key]);
     }
 }
 
@@ -82,11 +82,11 @@ export function setElementData<T extends Record<string, unknown> | object>(el: H
  * Получает типизированные данные из dataset атрибутов элемента
  */
 export function getElementData<T extends Record<string, unknown>>(el: HTMLElement, scheme: Record<string, Function>): T {
-    const data: Partial<T> = {};
+    const infoPayload: Partial<T> = {};
     for (const key in el.dataset) {
-        data[key as keyof T] = scheme[key](el.dataset[key]);
+        infoPayload[key as keyof T] = scheme[key](el.dataset[key]);
     }
-    return data as T;
+    return infoPayload as T;
 }
 
 /**
@@ -111,13 +111,13 @@ export function createElement<
     T extends HTMLElement
     >(
     tagName: keyof HTMLElementTagNameMap,
-    props?: Partial<Record<keyof T, string | boolean | object>>,
+    parameters?: Partial<Record<keyof T, string | boolean | object>>,
     children?: HTMLElement | HTMLElement []
 ): T {
     const element = document.createElement(tagName) as T;
-    if (props) {
-        for (const key in props) {
-            const value = props[key];
+    if (parameters) {
+        for (const key in parameters) {
+            const value = parameters[key];
             if (isPlainObject(value) && key === 'dataset') {
                 setElementData(element, value);
             } else {
