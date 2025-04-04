@@ -1,3 +1,5 @@
+https://github.com/spiritualbless/web-larek-frontend.git
+
 #  Проектная работа «Web Larek»
 
 **Стек:** `HTML`, `SCSS`, `TypeScript`, `Webpack`
