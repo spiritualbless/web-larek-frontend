@@ -44,13 +44,31 @@ yarn build
 
 Приложение реализовано по MVP архитектуре и состоит из следующих компонентов:
 
-| № | Компонент | Описание | Базовый класс | Связанные классы |
-|---|-----------|----------|---------------|-------------------|
-| 1 | **Model** | Модель данных | `DataModel` | `AppData`, `ProductItem`, `OrderData` |
-| 2 | **View** | Модель отображения | `ViewComponent` | `MainPage`, `ModalWindow`, `Cart`, `ProductCard`, `CartItem`, `BaseForm`, `PaymentForm`, `ContactForm`, `OrderSuccess` |
-| 3 | **Presenter** | Логика связи | - | Реализуется в `index.ts` |
 
-Событийно-ориентированный подход реализован через кастомный класс `EventManager` для обработки событий.
+Model
+
+Описание: Модель данных
+Базовый класс: DataModel
+Связанные классы: AppData, ProductItem, OrderData
+
+
+View
+
+Описание: Модель отображения
+Базовый класс: ViewComponent
+Связанные классы: MainPage, ModalWindow, Cart, ProductCard, CartItem, BaseForm, PaymentForm, ContactForm, OrderSuccess
+
+
+Presenter
+
+Описание: Логика связи
+Базовый класс: -
+Связанные классы: Реализуется в index.ts
+
+
+Событийно-ориентированный подход
+
+Реализован через кастомный класс EventManager для обработки событий.
 
 ---
 
