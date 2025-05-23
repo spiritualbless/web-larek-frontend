@@ -41,32 +41,37 @@ npm run build
 yarn build
 ```
 
+---
 
 Приложение реализовано по MVP архитектуре и состоит из следующих компонентов:
 
 
-Model
+### Model
 
 Описание: Модель данных
 Базовый класс: DataModel
 Связанные классы: AppData, ProductItem, OrderData
 
 
-View
+### View
 
 Описание: Модель отображения
+
 Базовый класс: ViewComponent
+
 Связанные классы: MainPage, ModalWindow, Cart, ProductCard, CartItem, BaseForm, PaymentForm, ContactForm, OrderSuccess
 
 
-Presenter
+### Presenter
 
 Описание: Логика связи
+
 Базовый класс: -
+
 Связанные классы: Реализуется в index.ts
 
 
-Событийно-ориентированный подход
+### Событийно-ориентированный подход
 
 Реализован через кастомный класс EventManager для обработки событий.
 
