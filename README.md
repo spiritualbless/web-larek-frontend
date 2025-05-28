@@ -1,203 +1,204 @@
-# Проектная работа "Веб-ларек"
+#  **Веб-ларёк — документация проекта**
 
-Стек: HTML, SCSS, TS, Webpack
 
-Структура проекта:
-- src/ — исходные файлы проекта
-- src/components/ — папка с JS компонентами
-- src/components/base/ — папка с базовым кодом
+##  **Архитектура проекта**
 
-Важные файлы:
-- src/pages/index.html — HTML-файл главной страницы
-- src/types/index.ts — файл с типами
-- src/index.ts — точка входа приложения
-- src/scss/styles.scss — корневой файл стилей
-- src/utils/constants.ts — файл с константами
-- src/utils/utils.ts — файл с утилитами
+* **Model** — бизнес-логика и управление данными: `Cart`, `Catalog`, `AppState`
+* **View** — компоненты отображения, унаследованные от `Component<T>`
+* **Presenter** — связующая логика в `index.ts`
+* **EventEmitter** — независимый связующий механизм
 
-## Установка и запуск
-Для установки и запуска проекта необходимо выполнить команды
+---
 
-```
-npm install
-npm run start
-```
+##  **Типы данных (`src/types/index.ts`)**
 
-или
+```ts
+export interface Product {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  category: string;
+  price: number | null;
+}
 
-```
-yarn
-yarn start
-```
-## Сборка
+export type PaymentMethod = 'card' | 'cash';
 
-```
-npm run build
-```
+export interface OrderForm {
+  payment: PaymentMethod;
+  address: string;
+  email: string;
+  phone: string;
+}
 
-или
+export interface OrderData extends OrderForm {
+  items: string[];
+  formErrors: Record<string, string>;
+}
 
-```
-yarn build
+export interface CartItem {
+  id: string;
+  title: string;
+  price: number;
+}
+
+export interface AppState {
+  catalog: Product[];
+  cart: CartItem[];
+  order: Partial<OrderData>;
+  preview: Product | null;
+
+  isProductInCart(id: string): boolean;
+  getCartIds(): string[];
+  getCartLength(): number;
+  getTotal(): number;
+  clearCart(): void;
+  initOrder(): OrderData;
+}
 ```
 
 ---
 
-Приложение реализовано по MVP архитектуре и состоит из следующих компонентов:
+##  **Базовый код**
 
+### **`Component<T>` — базовый класс для View**
 
-### Model
+Методы:
 
-Описание: Модель данных
-Базовый класс: DataModel
-Связанные классы: AppData, ProductItem, OrderData
-
-
-### View
-
-Описание: Модель отображения
-
-Базовый класс: ViewComponent
-
-Связанные классы: MainPage, ModalWindow, Cart, ProductCard, CartItem, BaseForm, PaymentForm, ContactForm, OrderSuccess
-
-
-### Presenter
-
-Описание: Логика связи
-
-Базовый класс: -
-
-Связанные классы: Реализуется в index.ts
-
-
-### Событийно-ориентированный подход
-
-Реализован через кастомный класс EventManager для обработки событий.
+* `render(data?: Partial<T>): HTMLElement`
+* `toggleClass()`, `setText()`, `setDisabled()`, `setImage()` и др.
 
 ---
 
-### Базовый код
+### **`EventEmitter` — реализация паттерна "Наблюдатель"**
 
-1. **Класс ApiClient**  
-   Нативный класс для работы с API, использующий `fetch` для HTTP-запросов.  
-   - Поддерживает безопасные (GET) и небезопасные (POST, DELETE) операции.  
-   - Методы: `get`, `post`, `delete`.  
-   - Конфигурация: Базовый URL задаётся в конструкторе, обработка JSON встроена.
+Методы:
 
-
-2. **Класс ViewComponent**  
-   Базовый класс для компонентов отображения. Использует нативный DOM API для управления элементами.  
-   - Методы: `setText`, `toggleClass`, `setDisabled`, `render`.  
-
-
-3. **Класс EventManager**  
-   Реализует паттерн «Наблюдатель» для обработки событий.  
-   - Методы: `on`, `off`, `emit`, `onAll`, `offAll`.  
-   - Особенности: Хранит подписчиков в объекте, где ключ — имя события, значение — массив коллбэков.
-
-
-4. **Класс DataModel**  
-   Базовый класс для моделей данных. Связывает данные с объектом и уведомляет о изменениях через `EventManager`.  
-   - Методы: `setData`, `emitChange`.  
-
+```ts
+on<T>(event: string, cb: (data: T) => void): void
+off(event: string, cb: Function): void
+emit<T>(event: string, data?: T): void
+onAll(cb: (e: { eventName: string; data?: unknown }) => void): void
+offAll(): void
+```
 
 ---
 
-### Компоненты модели данных (бизнес-логика)
+##  **MODEL**
 
-1. **Класс AppData**  
-   Хранит состояние приложения.  
-   - Свойства:  
-     - `catalog`: Список доступных продуктов (событие `catalog:changed`).  
-     - `cart`: Продукты в корзине.  
-     - `order`: Данные заказа.  
-     - `preview`: Продукт для модального окна.  
-   - Методы: `addToCart`, `removeFromCart`, `clearCart`, `getTotal`, `getCartIds`, `getCartLength`, `initOrder`.  
+### **`Cart`**
 
-2. **Класс ProductItem**  
-   Хранит данные одного продукта.  
-   - Свойства: `id`, `title`, `description`, `image`, `category`, `price`, `isInCart`.  
-   - Методы: `toggleInCart` (добавление/удаление из корзины, событие `product:changed`).  
+```ts
+add(product: Product): void
+remove(productId: string): void
+has(productId: string): boolean
+getAll(): CartItem[]
+clear(): void
+```
 
-3. **Класс OrderData**  
-   Хранит данные заказа.  
-   - Свойства: `payment`, `address`, `email`, `phone`, `items`, `formErrors`.  
-   - Методы: `validateFields`, `clearOrder`, `submitOrder`.  
-   - Особенности: Валидация вызывает событие `order:validation`.  
+### **`Catalog`**
+
+```ts
+loadProducts(): Promise<void>
+getAll(): Product[]
+```
 
 ---
 
-### Компоненты представления
+##  **VIEW (устройства отображения)**
 
-1. **Класс MainPage**  
-   Отображает главную страницу.  
-   - Свойства:  
-     - `cartCounter`: Количество товаров в корзине.  
-     - `gallery`: Список карточек продуктов.  
-     - `wrapper`: Контейнер для блокировки прокрутки.  
-     - `cartButton`: Кнопка открытия корзины (событие `cart:open`).  
+### Пример: **`ProductCard extends Component<Product>`**
 
-2. **Класс ModalWindow**  
-   Модальное окно.  
-   - Свойства:  
-     - `content`: Внутреннее содержимое.  
-     - `closeButton`: Кнопка закрытия (событие `modal:close`).  
+```ts
+render(data: Product): HTMLElement
+```
 
-3. **Класс Cart**  
-   Отображает корзину.  
-   - Свойства:  
-     - `items`: Список элементов корзины.  
-     - `total`: Общая стоимость.  
-     - `orderButton`: Кнопка открытия формы заказа (событие `order:open`).  
-
-4. **Класс ProductCard**  
-   Карточка продукта.  
-   - Свойства: `id`, `title`, `price`, `image`, `category`.  
-   - События: Клик вызывает `product:open`.  
-
-5. **Класс CartItem**  
-   Элемент корзины.  
-   - Свойства: `index`, `title`, `price`, `deleteButton`.  
-   - События: Клик по кнопке удаления вызывает `product:remove`.  
-
-6. **Класс BaseForm**  
-   Базовая форма.  
-   - Свойства:  
-     - `submitButton`: Кнопка отправки.  
-     - `errorBlock`: Блок ошибок.  
-   - События: `input:change`, `form:submit`.  
-
-7. **Класс PaymentForm**  
-   Форма оплаты и адреса доставки.  
-   - Свойства: `payment`, `address`.  
-   - События: `payment:change`, `address:change`, `payment:submit`.  
-
-8. **Класс ContactForm**  
-   Форма контактной информации.  
-   - Свойства: `email`, `phone`.  
-   - События: `email:change`, `phone:change`, `contacts:submit`.  
-
-9. **Класс OrderSuccess**  
-   Отображает успешный заказ.  
-   - Свойства: `total` (общая сумма).  
+Использует данные типа `Product`, отображает карточку товара, генерирует событие `product:open` при клике.
 
 ---
 
-### Внешние связи
+##  **AppState — единая модель состояния**
 
-1. **Класс LarekApiClient**  
-   Расширяет `ApiClient` для работы с API магазина.  
-   - Методы:  
-     - `getProduct`: Получение данных о продукте.  
-     - `getProductList`: Получение списка продуктов.  
-     - `submitOrder`: Отправка заказа.  
+Комбинирует все данные приложения. Подписан на `EventEmitter`.
+
+Методы:
+
+```ts
+isProductInCart(id: string): boolean
+getCartIds(): string[]
+getCartLength(): number
+getTotal(): number
+clearCart(): void
+initOrder(): OrderData
+```
 
 ---
 
-### Ключевые типы данных
+##  **Модальное окно `Modal`**
 
-```typescript
+**Одиночный компонент**, не имеет наследников.
+
+Методы:
+
+```ts
+open(content: HTMLElement): void
+close(): void
+```
+
+---
+
+##  **Список событий**
+
+### **MODEL:**
+
+* `catalog:changed` — загрузка товаров
+* `cart:changed` — изменение корзины
+* `order:validation`, `order:submit`, `order:complete`
+
+### **VIEW:**
+
+* `product:open`
+* `cart:open`
+* `order:open`
+* `contacts:submit`
+* `modal:open`, `modal:close`
+* `email:change`, `phone:change`, `payment:change`, `address:change`
+
+---
+
+##  **WebLarekApi — сервисный класс**
+
+Методы:
+
+```ts
+getProducts(): Promise<Product[]>
+submitOrder(order: OrderData): Promise<void>
+```
+
+---
+
+## ⚙️ **Константы (`constants.ts`)**
+
+```ts
+export const CATEGORY_NAMES: Record<string, string>
+export const FORM_ERRORS: Record<string, string>
+export enum Events { ... }
+```
+
+Все **магические строки** и категории вынесены в `constants.ts`.
+
+---
+
+##  **Presenter — `index.ts`**
+
+* Создаёт все модели и компоненты
+* Связывает слои через `EventEmitter`
+* Подписывает события и вызывает `render()`
+
+---
+
+## Ключевые типы данных
+
 interface IProduct {
     id: string;
     title: string;
@@ -253,4 +254,3 @@ enum Events {
     MODAL_OPEN = 'modal:open',
     MODAL_CLOSE = 'modal:close',
 }
-```
