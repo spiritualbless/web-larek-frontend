@@ -10,50 +10,62 @@
 
 ---
 
-##  **Типы данных (`src/types/index.ts`)**
+## Типы данных (`src/types/index.ts`)
 
 ```ts
-export interface Product {
+export type CategoryType = 'другое' | 'софт-скил' | 'дополнительное' | 'кнопка' | 'хард-скил';
+
+export interface IProduct {
   id: string;
   title: string;
   description: string;
   image: string;
-  category: string;
+  category: CategoryType;
   price: number | null;
+  selected: boolean;
 }
 
-export type PaymentMethod = 'card' | 'cash';
-
-export interface OrderForm {
-  payment: PaymentMethod;
+export interface IOrderForm {
+  payment: 'card' | 'cash';
   address: string;
+}
+
+export interface IContactsForm {
   email: string;
   phone: string;
 }
 
-export interface OrderData extends OrderForm {
+export interface IOrder extends IOrderForm, IContactsForm {
+  total: number | string;
   items: string[];
-  formErrors: Record<string, string>;
 }
 
-export interface CartItem {
+export interface ISuccess {
   id: string;
-  title: string;
-  price: number;
+  total: number;
 }
 
-export interface AppState {
-  catalog: Product[];
-  cart: CartItem[];
-  order: Partial<OrderData>;
-  preview: Product | null;
+export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
-  isProductInCart(id: string): boolean;
-  getCartIds(): string[];
-  getCartLength(): number;
+export type ApiListResponse<T> = {
+  total: number;
+  items: T[];
+};
+
+export interface IAppState {
+  basket: IProduct[];
+  store: IProduct[];
+  order: IOrder;
+  formErrors: Partial<Record<keyof IOrderForm | keyof IContactsForm, string>>;
+  setCatalog(items: IProduct[]): void;
+  addToBasket(item: IProduct): void;
+  removeFromBasket(itemId: string): void;
+  clearBasket(): void;
   getTotal(): number;
-  clearCart(): void;
-  initOrder(): OrderData;
+  setOrderField(field: keyof IOrderForm, value: string): void;
+  validateOrder(): boolean;
+  setContactsField(field: keyof IContactsForm, value: string): void;
+  validateContacts(): boolean;
 }
 ```
 
@@ -177,15 +189,13 @@ submitOrder(order: OrderData): Promise<void>
 
 ---
 
-## ⚙️ **Константы (`constants.ts`)**
+##  **Константы (`constants.ts`)**
 
 ```ts
 export const CATEGORY_NAMES: Record<string, string>
 export const FORM_ERRORS: Record<string, string>
 export enum Events { ... }
 ```
-
-Все **магические строки** и категории вынесены в `constants.ts`.
 
 ---
 
@@ -199,7 +209,7 @@ export enum Events { ... }
 
 ## Ключевые типы данных
 
-interface IProduct {
+* interface IProduct {
     id: string;
     title: string;
     description: string;
@@ -211,7 +221,7 @@ interface IProduct {
     removeFromCart: () => void;
 }
 
-interface IOrder {
+* interface IOrder {
     payment: string;
     address: string;
     email: string;
@@ -223,7 +233,7 @@ interface IOrder {
     submitOrder: () => void;
 }
 
-interface IAppData {
+* interface IAppData {
     catalog: IProduct[];
     cart: IProduct[];
     order: IOrder;
@@ -236,7 +246,7 @@ interface IAppData {
     initOrder: () => IOrder;
 }
 
-enum Events {
+* enum Events {
     CATALOG_CHANGED = 'catalog:changed',
     PRODUCT_OPEN = 'product:open',
     CART_OPEN = 'cart:open',
