@@ -209,7 +209,8 @@ export enum Events { ... }
 
 ## Ключевые типы данных
 
-* interface IProduct {
+```ts
+ interface IProduct {
     id: string;
     title: string;
     description: string;
@@ -221,7 +222,7 @@ export enum Events { ... }
     removeFromCart: () => void;
 }
 
-* interface IOrder {
+ interface IOrder {
     payment: string;
     address: string;
     email: string;
@@ -233,7 +234,7 @@ export enum Events { ... }
     submitOrder: () => void;
 }
 
-* interface IAppData {
+ interface IAppData {
     catalog: IProduct[];
     cart: IProduct[];
     order: IOrder;
@@ -246,7 +247,7 @@ export enum Events { ... }
     initOrder: () => IOrder;
 }
 
-* enum Events {
+ enum Events {
     CATALOG_CHANGED = 'catalog:changed',
     PRODUCT_OPEN = 'product:open',
     CART_OPEN = 'cart:open',
@@ -264,3 +265,4 @@ export enum Events { ... }
     MODAL_OPEN = 'modal:open',
     MODAL_CLOSE = 'modal:close',
 }
+```
