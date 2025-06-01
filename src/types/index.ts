@@ -2,17 +2,37 @@ export type CategoryType = 'другое' | 'софт-скил' | 'дополн�
 
 export interface IProduct {
   id: string;
+  index?: number;
   title: string;
-  description: string;
-  image: string;
+  description?: string;
+  image?: string;
   category: CategoryType;
   price: number | null;
   selected: boolean;
 }
 
-export interface IOrderForm {
-  payment: 'card' | 'cash';
-  address: string;
+export interface IView {
+	render(data?: object): HTMLElement;
+}
+
+export interface ICart {
+	items: IProduct[];
+	add(item: IProduct): void;
+	delete(id: string): void;
+	clearCart(): void;
+	getTotalPrice(): number;
+}
+
+export interface ICardsCatalog {
+products: IProduct[];
+
+  setItems(items: IProduct[]): void;
+  getItem(id: string): IProduct | undefined;
+}
+
+
+export interface IAction {
+	onClick: (event: MouseEvent) => void;
 }
 
 export interface IContactsForm {
@@ -20,9 +40,9 @@ export interface IContactsForm {
   phone: string;
 }
 
-export interface IOrder extends IOrderForm, IContactsForm {
-  total: number | string;
-  items: string[];
+export interface IOrder {
+	payment: string;
+	address: string;
 }
 
 export interface ISuccess {
@@ -30,25 +50,31 @@ export interface ISuccess {
   total: number;
 }
 
+export interface IFormState<T> {
+	valid: boolean;
+	errors: T
+}
+
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
-export type ApiListResponse<T> = {
-  total: number;
-  items: T[];
+export type ApiListResponse = {
+  items: IProduct[];
 };
 
-export interface IAppState {
-  basket: IProduct[];
-  store: IProduct[];
-  order: IOrder;
-  formErrors: Partial<Record<keyof IOrderForm | keyof IContactsForm, string>>;
-  setCatalog(items: IProduct[]): void;
-  addToBasket(item: IProduct): void;
-  removeFromBasket(itemId: string): void;
-  clearBasket(): void;
-  getTotal(): number;
-  setOrderField(field: keyof IOrderForm, value: string): void;
-  validateOrder(): boolean;
-  setContactsField(field: keyof IContactsForm, value: string): void;
-  validateContacts(): boolean;
+export interface IModal {
+	content: HTMLElement;
+
+	showModal(): void;
+	closeModal(): void;
+}
+
+export interface IHeader {
+	counter: number;
+	cartButton: HTMLButtonElement;
+}
+
+export interface IPage {
+	header: HTMLElement;
+	catalog: HTMLElement[];
+	locked: boolean;
 }

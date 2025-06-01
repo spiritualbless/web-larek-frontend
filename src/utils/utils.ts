@@ -133,3 +133,12 @@ export function createElement<
     }
     return element;
 }
+
+export function handlePrice(price: string) {
+
+    if (price.length > 4) {
+        return price.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    } else {
+        return price;
+    }
+}

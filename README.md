@@ -1,268 +1,305 @@
-#  **Веб-ларёк — документация проекта**
+# Веб-Ларёк
 
+##  Описание проекта
 
-##  **Архитектура проекта**
-
-* **Model** — бизнес-логика и управление данными: `Cart`, `Catalog`, `AppState`
-* **View** — компоненты отображения, унаследованные от `Component<T>`
-* **Presenter** — связующая логика в `index.ts`
-* **EventEmitter** — независимый связующий механизм
+Проект выполнен в парадигме **MVP (Model-View-Presenter)** с использованием **TypeScript, SCSS, Webpack**.
 
 ---
 
-## Типы данных (`src/types/index.ts`)
+##  Стек технологий
 
-```ts
-export type CategoryType = 'другое' | 'софт-скил' | 'дополнительное' | 'кнопка' | 'хард-скил';
+* **HTML**
+* **SCSS**
+* **TypeScript**
+* **Webpack**
 
-export interface IProduct {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: CategoryType;
-  price: number | null;
-  selected: boolean;
-}
+---
 
-export interface IOrderForm {
-  payment: 'card' | 'cash';
-  address: string;
-}
+##  Структура проекта
 
-export interface IContactsForm {
-  email: string;
-  phone: string;
-}
-
-export interface IOrder extends IOrderForm, IContactsForm {
-  total: number | string;
-  items: string[];
-}
-
-export interface ISuccess {
-  id: string;
-  total: number;
-}
-
-export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
-
-export type ApiListResponse<T> = {
-  total: number;
-  items: T[];
-};
-
-export interface IAppState {
-  basket: IProduct[];
-  store: IProduct[];
-  order: IOrder;
-  formErrors: Partial<Record<keyof IOrderForm | keyof IContactsForm, string>>;
-  setCatalog(items: IProduct[]): void;
-  addToBasket(item: IProduct): void;
-  removeFromBasket(itemId: string): void;
-  clearBasket(): void;
-  getTotal(): number;
-  setOrderField(field: keyof IOrderForm, value: string): void;
-  validateOrder(): boolean;
-  setContactsField(field: keyof IContactsForm, value: string): void;
-  validateContacts(): boolean;
-}
+```bash
+src/
+│
+├── components/          # UI-компоненты (View-слой)
+│   ├── base/            # Базовые классы и интерфейсы (Form, Modal, Events и др.)
+│   └── ...              # Все представления: Card, CartView, Page, Header и т.д.
+│
+├── models/              # Слой данных: Cart, Order, Contacts, CardsCatalog
+├── types/               # Все интерфейсы и типы
+├── utils/               # Утилиты: функции и константы
+├── pages/
+│   └── index.html       # Главная страница
+│
+├── index.ts             # Точка входа (презентер)
+└── scss/
+    └── styles.scss      # Главный SCSS-файл
 ```
 
 ---
 
-##  **Базовый код**
+##  Установка и запуск
 
-### **`Component<T>` — базовый класс для View**
+### Установка зависимостей
+
+```bash
+npm install
+# или
+yarn
+```
+
+### Запуск проекта в dev-режиме
+
+```bash
+npm run start
+# или
+yarn start
+```
+
+### Сборка проекта
+
+```bash
+npm run build
+# или
+yarn build
+```
+
+---
+
+##  Архитектура (MVP)
+
+**MVP** разделяет проект на:
+
+* **Модель (Model)** — бизнес-логика, хранение состояния
+* **Представление (View)** — интерфейс, отображение данных
+* **Презентер** — посредник, обрабатывает события и координирует модель и представление
+
+---
+
+##  Базовая инфраструктура
+
+### `Api`
+
+Обёртка для HTTP-запросов.
+Методы:
+
+* `get(endpoint: string): Promise<T>`
+* `post(endpoint: string, data: any): Promise<T>`
+
+### `EventEmitter`
+
+Собственная реализация PubSub-механизма.
+Методы:
+
+* `emit(event: string, payload?: any)`
+* `on(event: string, handler: Function)`
+* `off(event: string, handler: Function)`
+* `trigger(event: string) => Function` — возвращает коллбек, автоматически вызывающий `emit`
+
+---
+
+##  Модель (Model)
+
+### `CardsCatalog`
+
+Управляет товарами.
+
+```ts
+products: IProduct[];
+
+setItems(items: IProduct[]): void;
+getItem(id: string): IProduct;
+```
+
+---
+
+### `Cart`
+
+Корзина товаров.
+
+```ts
+items: IProduct[];
+
+add(item: IProduct): void;
+delete(id: string): void;
+clearCart(): void;
+getTotalPrice(): number;
+```
+
+---
+
+### `Order`
+
+Состояние заказа.
+
+```ts
+payment: string;
+address: string;
+setField({ field, value }): void;
+checkValidation(): void;
+clearData(): void;
+```
+
+---
+
+### `Contacts`
+
+Контактные данные.
+
+```ts
+email: string;
+phone: string;
+setField({ field, value }): void;
+checkValidation(): void;
+clearData(): void;
+```
+
+---
+
+##  Представление (View)
+
+### `Card`
+
+Карта товара в каталоге.
+
+```ts
+render(product: IProduct): HTMLElement
+```
+
+---
+
+### `CardPreview`
+
+Превью карточки (в модалке).
+
+```ts
+render(product: IProduct): HTMLElement
+```
+
+---
+
+### `StoreCard`
+
+Карточка в корзине.
+
+```ts
+index: number;
+render(product: IProduct): HTMLElement
+```
+
+---
+
+### `CartView`
+
+Корзина.
+
+```ts
+render({ content: HTMLElement[], price: number }): HTMLElement
+```
+
+---
+
+### `OrderForm`, `ContactsForm`
+
+Формы заказа и контактов. Наследуются от `Form`.
 
 Методы:
 
-* `render(data?: Partial<T>): HTMLElement`
-* `toggleClass()`, `setText()`, `setDisabled()`, `setImage()` и др.
-
----
-
-### **`EventEmitter` — реализация паттерна "Наблюдатель"**
-
-Методы:
-
 ```ts
-on<T>(event: string, cb: (data: T) => void): void
-off(event: string, cb: Function): void
-emit<T>(event: string, data?: T): void
-onAll(cb: (e: { eventName: string; data?: unknown }) => void): void
-offAll(): void
+render(): HTMLElement
+clearInputs(): void
+disableButtons(): void
 ```
 
 ---
 
-##  **MODEL**
+### `Modal`
 
-### **`Cart`**
-
-```ts
-add(product: Product): void
-remove(productId: string): void
-has(productId: string): boolean
-getAll(): CartItem[]
-clear(): void
-```
-
-### **`Catalog`**
+Модальное окно.
 
 ```ts
-loadProducts(): Promise<void>
-getAll(): Product[]
+content: HTMLElement;
+
+render(): HTMLElement
+closeModal(): void
 ```
 
 ---
 
-##  **VIEW (устройства отображения)**
+### `SuccessModal`
 
-### Пример: **`ProductCard extends Component<Product>`**
-
-```ts
-render(data: Product): HTMLElement
-```
-
-Использует данные типа `Product`, отображает карточку товара, генерирует событие `product:open` при клике.
-
----
-
-##  **AppState — единая модель состояния**
-
-Комбинирует все данные приложения. Подписан на `EventEmitter`.
-
-Методы:
+Финальная модалка успешной покупки.
 
 ```ts
-isProductInCart(id: string): boolean
-getCartIds(): string[]
-getCartLength(): number
-getTotal(): number
-clearCart(): void
-initOrder(): OrderData
+render({ price: number }): HTMLElement
 ```
 
 ---
 
-##  **Модальное окно `Modal`**
+### `Header`
 
-**Одиночный компонент**, не имеет наследников.
-
-Методы:
+Шапка страницы с кнопкой корзины.
 
 ```ts
-open(content: HTMLElement): void
-close(): void
+counter: number;
+
+render(): HTMLElement
 ```
 
 ---
 
-##  **Список событий**
+### `Page`
 
-### **MODEL:**
-
-* `catalog:changed` — загрузка товаров
-* `cart:changed` — изменение корзины
-* `order:validation`, `order:submit`, `order:complete`
-
-### **VIEW:**
-
-* `product:open`
-* `cart:open`
-* `order:open`
-* `contacts:submit`
-* `modal:open`, `modal:close`
-* `email:change`, `phone:change`, `payment:change`, `address:change`
-
----
-
-##  **WebLarekApi — сервисный класс**
-
-Методы:
+Контейнер страницы.
 
 ```ts
-getProducts(): Promise<Product[]>
-submitOrder(order: OrderData): Promise<void>
+locked: boolean;
+header: HTMLElement;
+catalog: HTMLElement;
 ```
 
 ---
 
-##  **Константы (`constants.ts`)**
+##  Взаимодействие компонентов (Presenter)
 
-```ts
-export const CATEGORY_NAMES: Record<string, string>
-export const FORM_ERRORS: Record<string, string>
-export enum Events { ... }
-```
+Настраивается в `src/index.ts`. Подписки и обработка событий через `EventEmitter`.
+
+### Основные события
+
+| Событие                | Значение                                                     |
+| ---------------------- | ------------------------------------------------------------ |
+| `cards:changed`        | Товары загружены, отрисовать каталог                         |
+| `card:select`          | Открыть модалку с описанием товара                           |
+| `card:toCart`          | Добавить товар в корзину и закрыть модалку                   |
+| `cart:open`            | Открыть корзину                                              |
+| `cart:delete`          | Удалить товар из корзины                                     |
+| `cart:changed`         | Обновить отображение корзины и цену                          |
+| `cart:order`           | Открыть форму заказа                                         |
+| `orderInput:change`    | Пользователь вводит адрес или способ оплаты                  |
+| `contactsInput:change` | Пользователь вводит email или телефон                        |
+| `order:submit`         | Перейти к форме контактов                                    |
+| `contacts:submit`      | Завершить заказ, отправить на сервер                         |
+| `modal:close`          | Закрыть текущее модальное окно                               |
+| `order:success`        | Заказ завершён — сбросить данные и открыть финальную модалку |
 
 ---
 
-##  **Presenter — `index.ts`**
+##  Функциональность
 
-* Создаёт все модели и компоненты
-* Связывает слои через `EventEmitter`
-* Подписывает события и вызывает `render()`
+* Каталог товаров (данные с сервера)
+* Модальные окна
+* Корзина с подсчётом суммы
+* Пошаговое оформление заказа
+* Валидация форм
+* Уведомление об успешной покупке
 
 ---
 
-## Ключевые типы данных
+##  Завершение заказа
 
-```ts
- interface IProduct {
-    id: string;
-    title: string;
-    description: string;
-    image: string;
-    category: string;
-    price: number;
-    isInCart: boolean;
-    addToCart: () => void;
-    removeFromCart: () => void;
-}
+После успешной покупки:
 
- interface IOrder {
-    payment: string;
-    address: string;
-    email: string;
-    phone: string;
-    items: IProduct[];
-    formErrors: { [key: string]: string };
-    validateFields: () => void;
-    clearOrder: () => void;
-    submitOrder: () => void;
-}
+* очищается корзина
+* очищаются поля форм
+* отображается финальное модальное окно
+* при клике по "За новыми покупками!" пользователь возвращается к каталогу
 
- interface IAppData {
-    catalog: IProduct[];
-    cart: IProduct[];
-    order: IOrder;
-    preview: IProduct | null;
-    isProductInCart: (id: string) => boolean;
-    clearCart: () => void;
-    getTotal: () => number;
-    getCartIds: () => string[];
-    getCartLength: () => number;
-    initOrder: () => IOrder;
-}
-
- enum Events {
-    CATALOG_CHANGED = 'catalog:changed',
-    PRODUCT_OPEN = 'product:open',
-    CART_OPEN = 'cart:open',
-    PRODUCT_CHANGED = 'product:changed',
-    ORDER_VALIDATION = 'order:validation',
-    ORDER_OPEN = 'order:open',
-    ORDER_SUBMIT = 'order:submit',
-    CONTACTS_OPEN = 'contacts:open',
-    CONTACTS_SUBMIT = 'contacts:submit',
-    ORDER_COMPLETE = 'order:complete',
-    PAYMENT_CHANGED = 'payment:changed',
-    ADDRESS_CHANGED = 'address:change',
-    EMAIL_CHANGED = 'email:change',
-    PHONE_CHANGED = 'phone:change',
-    MODAL_OPEN = 'modal:open',
-    MODAL_CLOSE = 'modal:close',
-}
-```
