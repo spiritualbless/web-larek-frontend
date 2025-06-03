@@ -14,6 +14,11 @@ export class Modal implements IModal {
 			this.closeModal();
 			this.events.emit('order:succes');
 		});
+				this.container.addEventListener('click', (event: MouseEvent) => {
+			if (event.target === this.container) {
+				this.closeModal();
+			}
+		});
 	}
 
 	showModal() {

@@ -57,9 +57,10 @@ export interface IFormState<T> {
 
 export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
-export type ApiListResponse = {
-  items: IProduct[];
-};
+export interface ApiListResponse<T> {
+  items: T[];
+}
+
 
 export interface IModal {
 	content: HTMLElement;

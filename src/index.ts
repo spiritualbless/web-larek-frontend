@@ -1,7 +1,7 @@
 import './scss/styles.scss';
 import { EventEmitter } from './components/base/events';
-import { Api } from './components/base/api';
-import { API_URL } from './utils/constants';
+import { WebLarekApi } from './components/base/weblarekapi';
+import { API_URL, CDN_URL } from './utils/constants';
 import { Page, Header } from './components/view/page';
 import { Cart } from './components/model/cart';
 import { CartView } from './components/view/cart';
@@ -31,7 +31,7 @@ const headerContainer = document.querySelector('.header') as HTMLElement;
 const pageRoot = document.body as HTMLElement;
 
 // Основные объекты
-const api = new Api(API_URL);
+const api = new WebLarekApi(API_URL, CDN_URL);
 const events = new EventEmitter();
 
 const cart = new Cart(events);
@@ -49,17 +49,14 @@ const contactsForm = new ContactsForm(contactsTemplate, events);
 const successModal = new SuccessModal(successTemplate, events);
 
 // Загрузка данных
-api.get('/product')
-	.then(handleProductResponse)
-	.catch(handleApiError);
-
-function handleProductResponse({ items }: ApiListResponse): void {
-	catalog.setItems(items);
-}
-
-function handleApiError(error: unknown): void {
-	console.error('[API ERROR] Failed to fetch products:', error);
-}
+api
+	.get('/product')
+	.then((data: ApiListResponse<IProduct>) => {
+			catalog.setItems(data.items);
+	})
+	.catch((err) => {
+		console.log(err);
+	});
 
 // Обновление каталога
 events.on('cards:changed', handleCatalogUpdate);

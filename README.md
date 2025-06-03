@@ -1,305 +1,308 @@
 # Веб-Ларёк
 
-##  Описание проекта
+##  Описание
 
-Проект выполнен в парадигме **MVP (Model-View-Presenter)** с использованием **TypeScript, SCSS, Webpack**.
-
----
-
-##  Стек технологий
-
-* **HTML**
-* **SCSS**
-* **TypeScript**
-* **Webpack**
+**Веб-Ларёк** — это фронтенд-приложение интернет-магазина, реализованное на TypeScript с использованием архитектурного паттерна **MVP**. В проекте используется событийная архитектура, что обеспечивает слабую связанность между компонентами, масштабируемость и поддержку SRP (принцип единственной ответственности).
 
 ---
 
-##  Структура проекта
+##  Используемый стек
 
-```bash
-src/
-│
-├── components/          # UI-компоненты (View-слой)
-│   ├── base/            # Базовые классы и интерфейсы (Form, Modal, Events и др.)
-│   └── ...              # Все представления: Card, CartView, Page, Header и т.д.
-│
-├── models/              # Слой данных: Cart, Order, Contacts, CardsCatalog
-├── types/               # Все интерфейсы и типы
-├── utils/               # Утилиты: функции и константы
-├── pages/
-│   └── index.html       # Главная страница
-│
-├── index.ts             # Точка входа (презентер)
-└── scss/
-    └── styles.scss      # Главный SCSS-файл
-```
+* TypeScript
+* HTML, SCSS
+* Webpack
+* Event-driven архитектура
+* Паттерн MVP
+* Модули ES6
 
 ---
 
 ##  Установка и запуск
 
-### Установка зависимостей
-
 ```bash
-npm install
-# или
-yarn
-```
-
-### Запуск проекта в dev-режиме
-
-```bash
-npm run start
-# или
-yarn start
-```
-
-### Сборка проекта
-
-```bash
-npm run build
-# или
-yarn build
+npm install    # установка зависимостей
+npm run start  # запуск проекта в dev-режиме
 ```
 
 ---
 
-##  Архитектура (MVP)
+##  Архитектура
 
-**MVP** разделяет проект на:
+Проект организован по паттерну **MVP**:
 
-* **Модель (Model)** — бизнес-логика, хранение состояния
-* **Представление (View)** — интерфейс, отображение данных
-* **Презентер** — посредник, обрабатывает события и координирует модель и представление
+* **Model** — бизнес-логика (корзина, заказ, контакты, каталог)
+* **View** — представление интерфейса (карточки, корзина, формы, модалки)
+* **Presenter (index.ts)** — связывает модель и представление через события
 
----
-
-##  Базовая инфраструктура
-
-### `Api`
-
-Обёртка для HTTP-запросов.
-Методы:
-
-* `get(endpoint: string): Promise<T>`
-* `post(endpoint: string, data: any): Promise<T>`
-
-### `EventEmitter`
-
-Собственная реализация PubSub-механизма.
-Методы:
-
-* `emit(event: string, payload?: any)`
-* `on(event: string, handler: Function)`
-* `off(event: string, handler: Function)`
-* `trigger(event: string) => Function` — возвращает коллбек, автоматически вызывающий `emit`
+Все взаимодействия происходят через **событийный брокер `EventEmitter`**.
 
 ---
 
-##  Модель (Model)
+##  Структура проекта
 
-### `CardsCatalog`
-
-Управляет товарами.
-
-```ts
-products: IProduct[];
-
-setItems(items: IProduct[]): void;
-getItem(id: string): IProduct;
+```
+src/
+├── components/
+│   ├── base/         # API, EventEmitter, базовые абстракции
+│   ├── model/        # Cart, Order, Contacts, Catalog
+│   ├── view/         # Card, CartView, Header, Modal, Page, SuccessModal
+│   ├── common/       # Form
+├── types/            # Интерфейсы и типы
+├── utils/            # Константы
+├── pages/            # HTML-шаблоны
+├── scss/             # Стили
+└── index.ts          # Главный файл — презентер
 ```
 
 ---
 
-### `Cart`
+##  Классы и компоненты
 
-Корзина товаров.
+###  EventEmitter
 
-```ts
-items: IProduct[];
+Файл: `components/base/events.ts`
+Класс: `EventEmitter`
 
-add(item: IProduct): void;
-delete(id: string): void;
-clearCart(): void;
-getTotalPrice(): number;
-```
+* Брокер событий, реализует подписку и вызов событий
+* Методы: `on`, `emit`, `off`, `trigger`
 
 ---
 
-### `Order`
+###  WebLarekApi
 
-Состояние заказа.
+Файл: `components/base/weblarekapi.ts`
+Класс: `WebLarekApi extends Api`
 
-```ts
-payment: string;
-address: string;
-setField({ field, value }): void;
-checkValidation(): void;
-clearData(): void;
-```
+* Методы:
+
+  * `getProducs()` — загрузка товаров, подстановка CDN
+* Поля: `cdn`
 
 ---
 
-### `Contacts`
+###  Card-компоненты
 
-Контактные данные.
+Файлы:
 
-```ts
-email: string;
-phone: string;
-setField({ field, value }): void;
-checkValidation(): void;
-clearData(): void;
-```
-
----
-
-##  Представление (View)
-
-### `Card`
-
-Карта товара в каталоге.
-
-```ts
-render(product: IProduct): HTMLElement
-```
-
----
-
-### `CardPreview`
-
-Превью карточки (в модалке).
-
-```ts
-render(product: IProduct): HTMLElement
-```
-
----
-
-### `StoreCard`
-
-Карточка в корзине.
-
-```ts
-index: number;
-render(product: IProduct): HTMLElement
-```
-
----
-
-### `CartView`
-
-Корзина.
-
-```ts
-render({ content: HTMLElement[], price: number }): HTMLElement
-```
-
----
-
-### `OrderForm`, `ContactsForm`
-
-Формы заказа и контактов. Наследуются от `Form`.
+* `view/card.ts`: `Card`, `StoreCard`, `CardPreview`
+* Наследуют `BaseCard`
 
 Методы:
 
+* `render()`
+* `constructor()`
+
+Поля:
+
+* `template`, `button`, `description`, `product`, `actions`, `events`
+
+---
+
+###  CartView
+
+Файл: `view/cart.ts`
+Класс: `CartView`
+
+* Отображает список товаров в корзине
+* Слушает события удаления и обновления
+* Методы: `render()`
+
+---
+
+###  Modal
+
+Файл: `view/modal.ts`
+Классы: `Modal`, `SuccessModal`
+
+* `Modal`:
+
+  * Методы: `showModal()`, `closeModal()`, `render()`
+  * Поля: `_content`, `_closeButton`, `container`, `events`
+* `SuccessModal`:
+
+  * Показывает информацию о заказе
+  * Поля: `price`, `template`
+
+---
+
+###  OrderForm, ContactsForm
+
+Файлы: `view/order.ts`, `view/contacts.ts`
+Классы:
+
+* `OrderForm`: для выбора оплаты и адреса
+* `ContactsForm`: email и телефон
+
+Методы:
+
+* `render()`
+* Обработка input-событий
+
+---
+
+###  Header
+
+Файл: `view/header.ts`
+Класс: `Header implements IHeader`
+
+* Поля: `_counter`, `_cartButton`
+* Методы: `render()`, `set counter()`
+
+---
+
+###  Page
+
+Файл: `view/page.ts`
+Класс: `Page implements IPage`
+
+* Поля: `header`, `catalog`, `locked`
+* Методы: `setCatalog(items)`, `setLocked()`, `render()`
+
+---
+
+##  Модели (Model)
+
+###  Cart
+
+Файл: `model/cart.ts`
+Класс: `Cart implements ICart`
+
+* Методы:
+
+  * `add(item)`, `delete(id)`, `clearCart()`, `getTotalPrice()`
+* Поля: `items`
+
+---
+
+###  CardsCatalog
+
+Файл: `model/cards.ts`
+Класс: `CardsCatalog implements ICardsCatalog`
+
+* Методы: `setItems`, `getItem`
+
+---
+
+###  Contacts
+
+Файл: `model/contacts.ts`
+Класс: `Contacts implements IContactsForm`
+
+* Поля: `email`, `phone`
+* Методы: `validate()`
+
+---
+
+###  Order
+
+Файл: `model/order.ts`
+Класс: `Order implements IOrder`
+
+* Поля: `payment`, `address`
+* Методы: `validate()`
+
+---
+
+##  Типы и интерфейсы
+
+**Из файла `types/index.ts`**
+
 ```ts
-render(): HTMLElement
-clearInputs(): void
-disableButtons(): void
+type CategoryType = 'другое' | 'софт-скил' | 'дополнительное' | 'кнопка' | 'хард-скил';
+
+interface IProduct {
+  id: string;
+  index?: number;
+  title: string;
+  description?: string;
+  image?: string;
+  category: CategoryType;
+  price: number | null;
+  selected: boolean;
+}
+
+interface ICart {
+  items: IProduct[];
+  add(item: IProduct): void;
+  delete(id: string): void;
+  clearCart(): void;
+  getTotalPrice(): number;
+}
+
+interface ICardsCatalog {
+  products: IProduct[];
+  setItems(items: IProduct[]): void;
+  getItem(id: string): IProduct | undefined;
+}
+
+interface IContactsForm {
+  email: string;
+  phone: string;
+}
+
+interface IOrder {
+  payment: string;
+  address: string;
+}
+
+interface ISuccess {
+  id: string;
+  total: number;
+}
+
+interface IFormState<T> {
+  valid: boolean;
+  errors: T;
+}
+
+interface ApiListResponse<T> {
+  items: T[];
+}
+
+interface IModal {
+  content: HTMLElement;
+  showModal(): void;
+  closeModal(): void;
+}
+
+interface IHeader {
+  counter: number;
+  cartButton: HTMLButtonElement;
+}
+
+interface IPage {
+  header: HTMLElement;
+  catalog: HTMLElement[];
+  locked: boolean;
+}
+
+interface IView {
+  render(data?: object): HTMLElement;
+}
+
+interface IEvents {
+  on<T>(event: string, callback: (data: T) => void): void;
+  emit<T>(event: string, data?: T): void;
+  trigger<T>(event: string, context?: Partial<T>): (data: T) => void;
+}
 ```
 
 ---
 
-### `Modal`
+##  Процесс взаимодействия
 
-Модальное окно.
-
-```ts
-content: HTMLElement;
-
-render(): HTMLElement
-closeModal(): void
-```
+1. **View** инициирует событие через `EventEmitter`
+2. **Presenter** ловит событие и вызывает методы модели
+3. **Model** обновляет данные
+4. Событие `model:changed` запускает обновление соответствующего **View**
 
 ---
 
-### `SuccessModal`
+##  Принципы проектирования
 
-Финальная модалка успешной покупки.
+* **Модульность**: каждый компонент изолирован
+* **SRP**: все классы делают одну вещь
+* **Расширяемость**: добавление новых сущностей не ломает старые
+* **Событийная архитектура**: позволяет компоновать и масштабировать поведение
 
-```ts
-render({ price: number }): HTMLElement
-```
-
----
-
-### `Header`
-
-Шапка страницы с кнопкой корзины.
-
-```ts
-counter: number;
-
-render(): HTMLElement
-```
-
----
-
-### `Page`
-
-Контейнер страницы.
-
-```ts
-locked: boolean;
-header: HTMLElement;
-catalog: HTMLElement;
-```
-
----
-
-##  Взаимодействие компонентов (Presenter)
-
-Настраивается в `src/index.ts`. Подписки и обработка событий через `EventEmitter`.
-
-### Основные события
-
-| Событие                | Значение                                                     |
-| ---------------------- | ------------------------------------------------------------ |
-| `cards:changed`        | Товары загружены, отрисовать каталог                         |
-| `card:select`          | Открыть модалку с описанием товара                           |
-| `card:toCart`          | Добавить товар в корзину и закрыть модалку                   |
-| `cart:open`            | Открыть корзину                                              |
-| `cart:delete`          | Удалить товар из корзины                                     |
-| `cart:changed`         | Обновить отображение корзины и цену                          |
-| `cart:order`           | Открыть форму заказа                                         |
-| `orderInput:change`    | Пользователь вводит адрес или способ оплаты                  |
-| `contactsInput:change` | Пользователь вводит email или телефон                        |
-| `order:submit`         | Перейти к форме контактов                                    |
-| `contacts:submit`      | Завершить заказ, отправить на сервер                         |
-| `modal:close`          | Закрыть текущее модальное окно                               |
-| `order:success`        | Заказ завершён — сбросить данные и открыть финальную модалку |
-
----
-
-##  Функциональность
-
-* Каталог товаров (данные с сервера)
-* Модальные окна
-* Корзина с подсчётом суммы
-* Пошаговое оформление заказа
-* Валидация форм
-* Уведомление об успешной покупке
-
----
-
-##  Завершение заказа
-
-После успешной покупки:
-
-* очищается корзина
-* очищаются поля форм
-* отображается финальное модальное окно
-* при клике по "За новыми покупками!" пользователь возвращается к каталогу
 
