@@ -1,4 +1,4 @@
-import { IModal, IView } from '../../types';
+import { IModal } from '../../types';
 import { IEvents } from '../base/events';
 import { cloneTemplate } from '../../utils/utils';
 
@@ -12,9 +12,9 @@ export class Modal implements IModal {
 
 		this._closeButton.addEventListener('click', () => {
 			this.closeModal();
-			this.events.emit('order:succes');
 		});
-				this.container.addEventListener('click', (event: MouseEvent) => {
+
+		this.container.addEventListener('click', (event: MouseEvent) => {
 			if (event.target === this.container) {
 				this.closeModal();
 			}
@@ -36,33 +36,25 @@ export class Modal implements IModal {
 
 	render() {
 		this.showModal();
-
 		return this.container;
 	}
-}
 
-export class SuccessModal implements IView {
+	/**
+	 * Отображает сообщение об успешной покупке
+	 */
+	showSuccess(price: number, template: HTMLTemplateElement) {
+		const content = cloneTemplate(template);
+		const description = content.querySelector('.order-success__description') as HTMLElement;
+		const button = content.querySelector('.order-success__close') as HTMLButtonElement;
 
-	protected _content: HTMLElement;
-	protected _price: HTMLSpanElement;
-	protected _submitButton: HTMLButtonElement;
+		description.textContent = `Списано ${price} синапсов`;
 
-	constructor(template: HTMLTemplateElement, protected events: IEvents) {
-		this._content = cloneTemplate(template);
-		this._price = this._content.querySelector('.order-success__description');
-		this._submitButton = this._content.querySelector('.order-success__close');
-
-		this._submitButton.addEventListener('click', () => {
+		button.addEventListener('click', () => {
+			this.closeModal();
 			this.events.emit('order:success');
 		});
-	}
 
-	render(data: { price: number }): HTMLElement {
-
-		this._price.textContent = `Списано ${data.price} синапсов`;
-
-		this.events.emit('order:success');
-
-		return this._content;
+		this.content = content;
+		this.showModal();
 	}
 }

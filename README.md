@@ -1,8 +1,10 @@
-# Веб-Ларёк
+# Проект: Web Larek Frontend
 
-##  Описание
+## Краткое описание проекта
 
-**Веб-Ларёк** — это фронтенд-приложение интернет-магазина, реализованное на TypeScript с использованием архитектурного паттерна **MVP**. В проекте используется событийная архитектура, что обеспечивает слабую связанность между компонентами, масштабируемость и поддержку SRP (принцип единственной ответственности).
+Клиентская часть веб-приложения, реализованная на языке TypeScript, с использованием шаблонов и событийной модели.
+Приложение реализует функциональность интернет-магазина: загрузка данных с сервера, отображение товаров, управление корзиной, оформление заказа и подтверждение успешной покупки. Архитектура приложения ориентирована на разделение ответственности между слоями.
+Пользователи могут просматривать товары, добавлять их в корзину, оформлять заказ с выбором способа оплаты и вводом контактных данных. После оформления заказа отображается сообщение об успешной покупке.
 
 ---
 
@@ -26,26 +28,16 @@ npm run start  # запуск проекта в dev-режиме
 
 ---
 
-##  Архитектура
-
-Проект организован по паттерну **MVP**:
-
-* **Model** — бизнес-логика (корзина, заказ, контакты, каталог)
-* **View** — представление интерфейса (карточки, корзина, формы, модалки)
-* **Presenter (index.ts)** — связывает модель и представление через события
-
-Все взаимодействия происходят через **событийный брокер `EventEmitter`**.
-
----
 
 ##  Структура проекта
 
 ```
 src/
 ├── components/
-│   ├── base/         # API, EventEmitter, базовые абстракции
+│   ├── base/         # API, EventEmitter
 │   ├── model/        # Cart, Order, Contacts, Catalog
-│   ├── view/         # Card, CartView, Header, Modal, Page, SuccessModal
+│   ├── services/     # webLarekApi
+│   ├── view/         # Card, CartView, Header, Modal, Page
 │   ├── common/       # Form
 ├── types/            # Интерфейсы и типы
 ├── utils/            # Константы
@@ -56,152 +48,18 @@ src/
 
 ---
 
-##  Классы и компоненты
+## Архитектура проекта
 
-###  EventEmitter
+Приложение реализовано по паттерну **MVP (Model-View-Presenter)**:
 
-Файл: `components/base/events.ts`
-Класс: `EventEmitter`
+* **Model** — хранит и обрабатывает данные (`Cart`, `Order`, `Contacts`, `CardsCatalog`)
+* **View** — отвечает за отрисовку интерфейса (`Card`, `CartView`, `OrderForm`, `ContactsForm`, `Modal`, `Page`, `Header`)
+* **Presenter** — `index.ts`, соединяет слои, реализует бизнес-логику и событийную маршрутизацию
 
-* Брокер событий, реализует подписку и вызов событий
-* Методы: `on`, `emit`, `off`, `trigger`
-
----
-
-###  WebLarekApi
-
-Файл: `components/base/weblarekapi.ts`
-Класс: `WebLarekApi extends Api`
-
-* Методы:
-
-  * `getProducs()` — загрузка товаров, подстановка CDN
-* Поля: `cdn`
+Все взаимодействия происходят через **событийный брокер `EventEmitter`**.
 
 ---
 
-###  Card-компоненты
-
-Файлы:
-
-* `view/card.ts`: `Card`, `StoreCard`, `CardPreview`
-* Наследуют `BaseCard`
-
-Методы:
-
-* `render()`
-* `constructor()`
-
-Поля:
-
-* `template`, `button`, `description`, `product`, `actions`, `events`
-
----
-
-###  CartView
-
-Файл: `view/cart.ts`
-Класс: `CartView`
-
-* Отображает список товаров в корзине
-* Слушает события удаления и обновления
-* Методы: `render()`
-
----
-
-###  Modal
-
-Файл: `view/modal.ts`
-Классы: `Modal`, `SuccessModal`
-
-* `Modal`:
-
-  * Методы: `showModal()`, `closeModal()`, `render()`
-  * Поля: `_content`, `_closeButton`, `container`, `events`
-* `SuccessModal`:
-
-  * Показывает информацию о заказе
-  * Поля: `price`, `template`
-
----
-
-###  OrderForm, ContactsForm
-
-Файлы: `view/order.ts`, `view/contacts.ts`
-Классы:
-
-* `OrderForm`: для выбора оплаты и адреса
-* `ContactsForm`: email и телефон
-
-Методы:
-
-* `render()`
-* Обработка input-событий
-
----
-
-###  Header
-
-Файл: `view/header.ts`
-Класс: `Header implements IHeader`
-
-* Поля: `_counter`, `_cartButton`
-* Методы: `render()`, `set counter()`
-
----
-
-###  Page
-
-Файл: `view/page.ts`
-Класс: `Page implements IPage`
-
-* Поля: `header`, `catalog`, `locked`
-* Методы: `setCatalog(items)`, `setLocked()`, `render()`
-
----
-
-##  Модели (Model)
-
-###  Cart
-
-Файл: `model/cart.ts`
-Класс: `Cart implements ICart`
-
-* Методы:
-
-  * `add(item)`, `delete(id)`, `clearCart()`, `getTotalPrice()`
-* Поля: `items`
-
----
-
-###  CardsCatalog
-
-Файл: `model/cards.ts`
-Класс: `CardsCatalog implements ICardsCatalog`
-
-* Методы: `setItems`, `getItem`
-
----
-
-###  Contacts
-
-Файл: `model/contacts.ts`
-Класс: `Contacts implements IContactsForm`
-
-* Поля: `email`, `phone`
-* Методы: `validate()`
-
----
-
-###  Order
-
-Файл: `model/order.ts`
-Класс: `Order implements IOrder`
-
-* Поля: `payment`, `address`
-* Методы: `validate()`
-
----
 
 ##  Типы и интерфейсы
 
@@ -287,6 +145,203 @@ interface IEvents {
 }
 ```
 
+---
+
+## Базовый код (`src/components/base/`)
+
+### `class EventEmitter implements IEvents`
+
+Класс реализует шаблон "наблюдатель" (Observer) и используется в качестве централизованного механизма передачи событий между компонентами модели и представления.
+Файл: `components/base/events.ts`
+
+#### Свойства:
+
+```ts
+_events: Map<EventName, Set<Subscriber>>;
+```
+
+#### Методы:
+
+```ts
+on<T>(eventName: string, callback: (event: T) => void): void
+off(eventName: string, callback: Subscriber): void
+emit<T>(eventName: string, data?: T): void
+onAll(callback: (event: EmitterEvent) => void): void
+offAll(): void
+trigger<T>(eventName: string, context?: Partial<T>): (data: T) => void
+```
+
+---
+
+### `abstract class Component<T>`
+
+Базовый UI-компонент
+Файл: `components/base/component.ts`
+
+#### Методы:
+
+```ts
+setState(state: Partial<T>): void
+```
+
+---
+
+## MODEL
+
+### `class Cart`
+
+Хранит список товаров и управляет корзиной
+
+```ts
+add(product: IProduct): void
+delete(id: string): void
+clearCart(): void
+getTotalPrice(): number
+```
+
+---
+
+### `class Order`
+
+Хранит данные заказа
+
+```ts
+setField<K extends keyof IOrder>(field: K, value: IOrder[K]): void
+clearData(): void
+```
+
+---
+
+### `class Contacts`
+
+Хранит контактную информацию
+
+```ts
+setField<K extends keyof IContactsForm>(field: K, value: IContactsForm[K]): void
+clearData(): void
+```
+
+---
+
+### `class CardsCatalog`
+
+Хранит список продуктов
+
+```ts
+setItems(items: IProduct[]): void
+```
+
+---
+
+## VIEW
+
+Наследники `Component<T>` — отвечают за отображение пользовательского интерфейса.
+
+### `Card`, `StoreCard`, `CardPreview`
+
+Компоненты для визуализации карточек товара (в каталоге, в корзине, в предпросмотре)
+
+```ts
+render(product: IProduct): HTMLElement
+```
+
+---
+
+### `CartView`
+
+Компонент отображения содержимого корзины
+
+```ts
+render({ content: HTMLElement[], price: number }): HTMLElement
+```
+
+---
+
+### `OrderForm`, `ContactsForm`
+
+Формы заказа и ввода контактных данных
+
+```ts
+render(): HTMLElement
+clearInputs(): void
+disableButtons(): void
+```
+
+---
+
+### `Modal`
+
+Один универсальный модальный компонент
+
+```ts
+set content(value: HTMLElement): void
+render(): HTMLElement
+showModal(): void
+closeModal(): void
+showSuccess(price: number, template: HTMLTemplateElement): void
+```
+
+---
+
+## PRESENTER
+
+Файл `index.ts` выступает в роли Presenter.
+
+* Инициализирует модели, представления и API
+* Реагирует на события от `EventEmitter`
+* Управляет отображением, переходами и логикой оформления заказа
+* Служит точкой интеграции всех компонентов
+
+---
+
+## Список событий в приложении
+
+### События VIEW
+
+* `card:select` — клик по карточке товара
+* `card:toCart` — добавить товар в корзину
+* `cart:open` — открыть корзину
+* `cart:delete` — удалить товар из корзины
+* `cart:order` — перейти к оформлению
+* `modal:close` — закрытие модального окна
+
+---
+
+### События MODEL
+
+* `cards:changed` — обновление списка карточек
+* `cart:changed` — изменение состава корзины
+* `orderInput:change` — ввод данных в форму заказа
+* `orderErrors:change` — ошибки валидации заказа
+* `contactsInput:change` — ввод данных в форму контактов
+* `contactsErrors:change` — ошибки валидации контактов
+* `order:submit` — подтверждение заказа
+* `contacts:submit` — подтверждение контактов
+* `order:success` — завершение заказа, успех
+
+---
+
+## Сервисы
+
+### `class WebLarekApi extends Api`
+
+Обёртка над API. Используется для получения и отправки данных с сервера.
+
+```ts
+getProducts(): Promise<IProduct[]>
+order(data: IOrder & IContactsForm): Promise<ISuccess>
+```
+
+---
+
+### `class Api`
+
+Базовый HTTP-клиент.
+
+```ts
+get<T>(uri: string): Promise<T>
+post<T>(uri: string, data?: object): Promise<T>
+```
 ---
 
 ##  Процесс взаимодействия

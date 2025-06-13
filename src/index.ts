@@ -1,13 +1,13 @@
 import './scss/styles.scss';
 import { EventEmitter } from './components/base/events';
-import { WebLarekApi } from './components/base/weblarekapi';
+import { WebLarekApi } from './components/services/weblarekapi';
 import { API_URL, CDN_URL } from './utils/constants';
 import { Page, Header } from './components/view/page';
 import { Cart } from './components/model/cart';
 import { CartView } from './components/view/cart';
 import { CardsCatalog } from './components/model/cards';
 import { Card, StoreCard, CardPreview } from './components/view/card';
-import { Modal, SuccessModal } from './components/view/modal';
+import { Modal } from './components/view/modal';
 import { OrderForm } from './components/view/order';
 import { ContactsForm } from './components/view/contacts';
 import { ApiListResponse, IContactsForm, IOrder, IProduct } from './types';
@@ -46,7 +46,6 @@ const cartUI = new CartView(basketTemplate, events);
 const modal = new Modal(modalContainer, events);
 const orderForm = new OrderForm(orderTemplate, events);
 const contactsForm = new ContactsForm(contactsTemplate, events);
-const successModal = new SuccessModal(successTemplate, events);
 
 // Загрузка данных
 api
@@ -184,8 +183,8 @@ events.on('contacts:submit', () => {
 
 			header.counter = 0;
 
-			modal.content = successModal.render({ price: response.total });
-			modal.render();
+			modal.showSuccess(response.total, successTemplate);
+
 			
 		})
 		.catch(console.error);
