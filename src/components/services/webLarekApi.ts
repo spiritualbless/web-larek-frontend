@@ -1,5 +1,5 @@
 import { Api } from '../base/api';
-import { IProduct, ApiListResponse } from '../../types';
+import { IProduct, ApiListResponse, ISuccess, IOrder } from '../../types';
 import { CDN_URL } from '../../utils/constants';
 
 export class WebLarekApi extends Api {
@@ -18,4 +18,9 @@ getProducts(): Promise<IProduct[]> {
         }))
     );
 }
+
+order(data: IOrder): Promise<ISuccess> {
+	return this.post('/order', data) as Promise<ISuccess>;
 }
+}
+

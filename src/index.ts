@@ -1,6 +1,6 @@
 import './scss/styles.scss';
 import { EventEmitter } from './components/base/events';
-import { WebLarekApi } from './components/services/weblarekapi';
+import { WebLarekApi } from './components/services/webLarekApi';
 import { API_URL, CDN_URL } from './utils/constants';
 import { Page, Header } from './components/view/page';
 import { Cart } from './components/model/cart';
@@ -49,13 +49,11 @@ const contactsForm = new ContactsForm(contactsTemplate, events);
 
 // Загрузка данных
 api
-	.get('/product')
-	.then((data: ApiListResponse<IProduct>) => {
-			catalog.setItems(data.items);
-	})
-	.catch((err) => {
-		console.log(err);
-	});
+  .getProducts()
+  .then((products: IProduct[]) => {
+    catalog.setItems(products);
+  })
+  .catch(console.error);
 
 // Обновление каталога
 events.on('cards:changed', handleCatalogUpdate);
@@ -162,16 +160,17 @@ events.on('contactsInput:change', contactsState.setField.bind(contactsState));
 
 // Финальная отправка заказа
 events.on('contacts:submit', () => {
-	api
-		.post('/order', {
-			items: cart.items.map(item => item.id),
-			payment: orderState.payment,
-			total: cart.getTotalPrice(),
-			address: orderState.address,
-			email: contactsState.email,
-			phone: contactsState.phone,
-		})
-		.then((response: { total: number }) => {
+api
+  .order({
+    payment: orderState.payment,
+    total: cart.getTotalPrice(),
+    address: orderState.address,
+    email: contactsState.email,
+    phone: contactsState.phone,
+    items: cart.items.map(item => item.id), 
+  } as IOrder & { items: string[] }) 
+
+		.then((response) => {
 			cart.clearCart();
 			orderForm.clearInputs();
 			orderForm.disableButtons();
@@ -184,11 +183,10 @@ events.on('contacts:submit', () => {
 			header.counter = 0;
 
 			modal.showSuccess(response.total, successTemplate);
-
-			
 		})
 		.catch(console.error);
 });
+
 
 events.on('order:success', () => {
 	modal.closeModal();

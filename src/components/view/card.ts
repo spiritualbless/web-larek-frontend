@@ -23,7 +23,7 @@ abstract class BaseCard implements IView {
 		this._title.textContent = product.title;
 
 		if (this._image) {
-			this._image.src = CDN_URL + product.image;
+			this._image.src = product.image;
 			this._image.alt = product.title;
 		}
 

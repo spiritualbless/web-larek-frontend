@@ -36,7 +36,7 @@ src/
 ├── components/
 │   ├── base/         # API, EventEmitter
 │   ├── model/        # Cart, Order, Contacts, Catalog
-│   ├── services/     # webLarekApi
+│   ├── services/     # WebLarekApi
 │   ├── view/         # Card, CartView, Header, Modal, Page
 │   ├── common/       # Form
 ├── types/            # Интерфейсы и типы
